@@ -12,6 +12,30 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * Utility class for parsing Capitec bank statements from an Excel file.
+ */
+public class CapitecExcelUtil implements ExcelUtility {
+
+    private final XSSFWorkbook workbook;
+    private final SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy");
+    private final TransactionRows transactionRowsForFirstPage = new TransactionRows(4, 7, 16, 18, 19, 26);
+    private final TransactionRows transactionRowsForOtherPages = new TransactionRows(3, 6, 15, 18, 19, 1);
+    private List<String> transactions;
+
+    /**
+     * Constructs a new instance of CapitecExcelUtil with the specified file path.
+     *
+     * @param path the path to the Excel file
+     * @throws IOException if an I/O error occurs while reading the file
+     */
+    public CapitecExcelUtil(String path) throws IOException {
+        FileInputStream file = new FileInputStream(path);
+        this.workbook = new XSSFWorkbook(file);
+    }
+
+    // Rest of the code...
+}
 public class CapitecExcelUtil implements ExcelUtility {
 
     private final XSSFWorkbook workbook;
