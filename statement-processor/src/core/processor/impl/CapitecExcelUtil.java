@@ -1,10 +1,12 @@
 package core.processor.impl;
 
 import core.processor.in.ExcelUtility;
+import main.capitec.CapitecStatement;
 import main.capitec.entity.Transaction;
 import main.capitec.entity.TransactionRows;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
+import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -15,6 +17,7 @@ import java.util.List;
 /**
  * Utility class for parsing Capitec bank statements from an Excel file.
  */
+
 public class CapitecExcelUtil implements ExcelUtility {
 
     private final XSSFWorkbook workbook;
@@ -23,30 +26,15 @@ public class CapitecExcelUtil implements ExcelUtility {
     private final TransactionRows transactionRowsForOtherPages = new TransactionRows(3, 6, 15, 18, 19, 1);
     private List<String> transactions;
 
-    /**
-     * Constructs a new instance of CapitecExcelUtil with the specified file path.
-     *
-     * @param path the path to the Excel file
-     * @throws IOException if an I/O error occurs while reading the file
-     */
     public CapitecExcelUtil(String path) throws IOException {
         FileInputStream file = new FileInputStream(path);
         this.workbook = new XSSFWorkbook(file);
     }
 
-    // Rest of the code...
-}
-public class CapitecExcelUtil implements ExcelUtility {
-
-    private final XSSFWorkbook workbook;
-    private final SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy");
-    private final TransactionRows transactionRowsForFirstPage = new TransactionRows(4, 7, 16, 18, 19, 26);
-    private final TransactionRows transactionRowsForOtherPages = new TransactionRows(3, 6, 15, 18, 19, 1);
-    private List<String> transactions;
-
-    public CapitecExcelUtil(String path) throws IOException {
-        FileInputStream file = new FileInputStream(path);
-        this.workbook = new XSSFWorkbook(file);
+    public CapitecExcelUtil(byte[] bytes) throws  IOException {
+        try (ByteArrayInputStream bis = new ByteArrayInputStream(bytes)) {
+            this.workbook = new XSSFWorkbook(bis);
+        }
     }
 
     private static double parseMoneyValue(String cellValue) {
@@ -92,8 +80,8 @@ public class CapitecExcelUtil implements ExcelUtility {
                 String moneyInCellValue = getCellValue(index, row, transactionRows.moneyIn());
                 String moneyOutCellValue = getCellValue(index, row, transactionRows.moneyOut());
                 String balanceCellValue = getCellValue(index, row, transactionRows.balance());
-                System.out.println("Date: " + date + " Description: " + descriptionCellValue + " Money In: " + moneyInCellValue + " Money Out: " + moneyOutCellValue + " Balance: " + balanceCellValue);
-                transactions.add(new Transaction(date, descriptionCellValue, parseMoneyValue(moneyInCellValue), parseMoneyValue(moneyOutCellValue), parseMoneyValue(balanceCellValue)));
+                transactions.add(new Transaction(date, descriptionCellValue, parseMoneyValue(moneyInCellValue),
+                        parseMoneyValue(moneyOutCellValue), parseMoneyValue(balanceCellValue)));
 
                 if (nextTransactionEmpty(index, row, transactionRows)) {
                     row += 2;
@@ -112,7 +100,8 @@ public class CapitecExcelUtil implements ExcelUtility {
 
     private String getCellValue(int index, int row, int cell) {
         String value = workbook.getSheetAt(index).getRow(row + 1).getCell(cell).getStringCellValue();
-        if (value.isBlank()) return null;
+        if (value.isBlank())
+            return null;
         return value;
     }
 
@@ -126,5 +115,3 @@ public class CapitecExcelUtil implements ExcelUtility {
         return getCellValue(index, row + 1, transactionRows.date()) == null;
     }
 }
-
-
